@@ -27,17 +27,41 @@ function convertJsonToGraph(json, parent = null, nodes = [], links = [], id = 0)
     }
 
     for (const key in json) {
-        const node = { id: id++, name: key, parentId: parent.id };
-        nodes.push(node);
-        links.push({ source: parent.id, target: node.id });
+        let node;
+        if (Array.isArray(json[key])) {
+            // If the value is an array, create a node for the array itself
+            node = { id: id++, name: `${key} (${json[key].length})`, parentId: parent.id };
+            nodes.push(node);
+            links.push({ source: parent.id, target: node.id });
 
-        if (typeof json[key] === 'object' && json[key] !== null) {
-            id = convertJsonToGraph(json[key], node, nodes, links, id).id;
+            // Then create a node for each index of the array
+            json[key].forEach((item, index) => {
+                const indexNode = { id: id++, name: `Index ${index}`, parentId: node.id };
+                nodes.push(indexNode);
+                links.push({ source: node.id, target: indexNode.id });
+
+                if (typeof item === 'object' && item !== null) {
+                    id = convertJsonToGraph(item, indexNode, nodes, links, id).id;
+                } else {
+                    // Create a node for the value and link it to the index
+                    const valueNode = { id: id++, name: item, parentId: indexNode.id };
+                    nodes.push(valueNode);
+                    links.push({ source: indexNode.id, target: valueNode.id });
+                }
+            });
         } else {
-            // Create a node for the value and link it to the key
-            const valueNode = { id: id++, name: json[key], parentId: node.id };
-            nodes.push(valueNode);
-            links.push({ source: node.id, target: valueNode.id });
+            node = { id: id++, name: key, parentId: parent.id };
+            nodes.push(node);
+            links.push({ source: parent.id, target: node.id });
+
+            if (typeof json[key] === 'object' && json[key] !== null) {
+                id = convertJsonToGraph(json[key], node, nodes, links, id).id;
+            } else {
+                // Create a node for the value and link it to the key
+                const valueNode = { id: id++, name: json[key], parentId: node.id };
+                nodes.push(valueNode);
+                links.push({ source: node.id, target: valueNode.id });
+            }
         }
     }
 
@@ -79,7 +103,7 @@ function createGraph(nodes, links) {
     treeLayout(root);
 
     // Log the size of the tree layout
-    console.log(treeLayout.size());
+    //console.log(treeLayout.size());
 
     // Define the arrowhead marker
     svg.append('defs').append('marker')
