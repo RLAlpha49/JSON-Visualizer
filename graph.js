@@ -19,53 +19,73 @@ document.getElementById('graph-button').addEventListener('click', function() {
 });
 
 function convertJsonToGraph(json, parent = null, nodes = [], links = [], id = 0) {
+    const maxLineLength = 50;
+
     if (parent === null) {
-        // If there's no parent, this is the root node
         const node = { id: id++, name: 'root', parentId: null };
         nodes.push(node);
         parent = node;
     }
 
+    let combinedNodeContent = '';
     for (const key in json) {
-        let node;
-        if (Array.isArray(json[key])) {
-            // If the value is an array, create a node for the array itself
-            node = { id: id++, name: `${key} (${json[key].length})`, parentId: parent.id };
-            nodes.push(node);
-            links.push({ source: parent.id, target: node.id });
+        if (Array.isArray(json[key]) || (typeof json[key] === 'object' && json[key] !== null)) {
+            let node;
+            if (Array.isArray(json[key])) {
+                node = { id: id++, name: `${key} (${json[key].length})`, parentId: parent.id };
+                json[key].forEach((item, index) => {
+                    if (typeof item === 'object' && item !== null) {
+                        const indexNode = { id: id++, name: `Index ${index}`, parentId: node.id };
+                        nodes.push(indexNode);
+                        links.push({ source: node.id, target: indexNode.id });
 
-            // Then create a node for each index of the array
-            json[key].forEach((item, index) => {
-                const indexNode = { id: id++, name: `Index ${index}`, parentId: node.id };
-                nodes.push(indexNode);
-                links.push({ source: node.id, target: indexNode.id });
-
-                if (typeof item === 'object' && item !== null) {
-                    id = convertJsonToGraph(item, indexNode, nodes, links, id).id;
-                } else {
-                    // Create a node for the value and link it to the index
-                    const valueNode = { id: id++, name: item, parentId: indexNode.id };
-                    nodes.push(valueNode);
-                    links.push({ source: indexNode.id, target: valueNode.id });
-                }
-            });
-        } else {
-            node = { id: id++, name: key, parentId: parent.id };
-            nodes.push(node);
-            links.push({ source: parent.id, target: node.id });
-
-            if (typeof json[key] === 'object' && json[key] !== null) {
-                id = convertJsonToGraph(json[key], node, nodes, links, id).id;
+                        if (typeof item === 'object') {
+                            id = convertJsonToGraph(item, indexNode, nodes, links, id).id;
+                        } else {
+                            const valueNode = { id: id++, name: item, parentId: indexNode.id };
+                            nodes.push(valueNode);
+                            links.push({ source: indexNode.id, target: valueNode.id });
+                        }
+                    } else {
+                        const valueNode = { id: id++, name: item, parentId: node.id };
+                        nodes.push(valueNode);
+                        links.push({ source: node.id, target: valueNode.id });
+                    }
+                });
             } else {
-                // Create a node for the value and link it to the key
-                const valueNode = { id: id++, name: json[key], parentId: node.id };
-                nodes.push(valueNode);
-                links.push({ source: node.id, target: valueNode.id });
+                node = { id: id++, name: key, parentId: parent.id };
+                id = convertJsonToGraph(json[key], node, nodes, links, id).id;
+            }
+            nodes.push(node);
+            links.push({ source: parent.id, target: node.id });
+        } else {
+            // Combine the key and value into one string
+            let keyValue = `${key}: ${json[key]}`;
+
+            // Break the keyValue into substrings of maxLineLength and add each substring to combinedNodeContent
+            for (let i = 0; i < keyValue.length; i += maxLineLength) {
+                combinedNodeContent += keyValue.substring(i, i + maxLineLength) + '\n';
             }
         }
     }
 
+    if (combinedNodeContent !== '') {
+        parent.name = combinedNodeContent;
+    }
+
     return { nodes, links, id };
+}
+
+function calculateMultiplicationFactor(totalChildren) {
+    if (totalChildren > 9000) {
+        return 80;
+    } else if (totalChildren > 1000) {
+        return 60;
+    } else if (totalChildren > 100) {
+        return 40;
+    } else {
+        return 30;
+    }
 }
 
 function createGraph(nodes, links) {
@@ -98,7 +118,7 @@ function createGraph(nodes, links) {
 
     // Create the tree layout with size proportional to the total number of children and maximum depth
     const treeLayout = d3.tree()
-        .size([(totalChildren + 1) * 20, (maxDepth + 1) * 300])
+        .size([calculateMultiplicationFactor(totalChildren) * (totalChildren + 1), (maxDepth + 1) * 400])
         .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
     treeLayout(root);
 
@@ -125,38 +145,71 @@ function createGraph(nodes, links) {
         .selectAll('rect')
         .data(root.descendants())
         .enter().append('rect')
-        .attr('height', 20) // height of the rectangle
-        .attr('fill', 'white') // color of the rectangle
-        .attr('stroke', '#3f3f46') // color of the outline
-        .attr('stroke-width', 1) // width of the outline
-        .attr('rx', 5) // horizontal radius of the corners
-        .attr('ry', 5) // vertical radius of the corners
+        .attr('fill', 'white')
+        .attr('stroke', '#3f3f46')
+        .attr('stroke-width', 1)
+        .attr('rx', 5)
+        .attr('ry', 5)
         .each(function(d) {
-            // Create a temporary text element to calculate the width of the text
-            const tempText = svg.append('text').text(d.data.name);
-            const textWidth = tempText.node().getBBox().width;
-            tempText.remove();
+            // Split the name into separate lines
+            const lines = d.data.name.split('\n');
+            let maxLineWidth = 0;
+            let lineHeight = 0;
 
-            // Set the width of the rectangle to be slightly larger than the text
-            const rectWidth = textWidth + 10;
-            d3.select(this).attr('width', rectWidth);
+            // Create a temporary text element to calculate the width of each line
+            lines.forEach(line => {
+                const tempText = svg.append('text').text(line);
+                const lineWidth = tempText.node().getBBox().width;
+                lineHeight = tempText.node().getBBox().height;
+                tempText.remove();
 
-            // Store the width in the data for later use
+                // Update maxLineWidth if this line is wider
+                if (lineWidth > maxLineWidth) {
+                    maxLineWidth = lineWidth;
+                }
+            });
+
+            // Set the width and height of the rectangle
+            const rectWidth = maxLineWidth + 30;
+            const rectHeight = lines.length > 1 ? 30 * (lines.length - 1) : 20;
+            d3.select(this).attr('width', rectWidth).attr('height', rectHeight);
+
+            // Store the width and height in the data for later use
             d.data.width = rectWidth;
+            d.data.height = rectHeight;
         })
         .attr('x', d => d.y + 26.5)
-        .attr('y', d => d.x - 10);
+        .attr('y', d => d.x - d.data.height / 2);
 
     // Create the labels
     const labels = svg.append('g')
         .selectAll('text')
         .data(root.descendants())
         .enter().append('text')
-        .text(d => d.data.name)
         .attr('dx', 12)
-        .attr('dy', '.35em')
         .attr('x', d => d.y + 20)
-        .attr('y', d => d.x);
+        .attr('y', d => {
+            const lines = d.data.name.split('\n');
+            return lines.length > 1 ? d.x + 15 : d.x + 5;
+        })
+        .each(function(d) {
+            // Split the name into separate lines
+            const lines = d.data.name.split('\n');
+            const lineHeight = 1.5;
+            const totalHeight = lines.length * lineHeight;
+
+            for (let i = 0; i < lines.length; i++) {
+                const tspan = d3.select(this).append('tspan')
+                    .text(lines[i])
+                    .attr('dy', `${i === 0 ? -totalHeight / 2 + lineHeight / 2 : lineHeight}em`);
+
+                if (i === 0) {
+                    tspan.attr('x', d => d.y + 30);
+                } else if (i > 0) {
+                    tspan.attr('x', d => d.y + 42);
+                }
+            }
+        });
 
     // Create the links
     const link = svg.append('g')
@@ -164,11 +217,15 @@ function createGraph(nodes, links) {
         .data(root.links())
         .enter().append('path')
         .attr('d', d3.linkHorizontal()
-            .source(d => [d.source.y + 27 + d.source.data.width, d.source.x])
+            .source(d => {
+                // Ensure d.source.data.width is a number
+                const width = isNaN(d.source.data.width) ? 0 : d.source.data.width;
+                return [d.source.y + 27 + width, d.source.x];
+            })
             .target(d => [d.target.y + 20, d.target.x]))
         .attr('stroke', '#3f3f46')
         .attr('fill', 'none')
-        .attr('marker-end', 'url(#arrowhead)'); // Add the arrowhead marker
+        .attr('marker-end', 'url(#arrowhead)');
 
     // Attach a zoom event to the SVG
     svg.call(d3.zoom().on("zoom", function () {
