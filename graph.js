@@ -73,33 +73,55 @@ function createGraph(nodes, links) {
     const totalChildren = d3.sum(root.descendants(), d => d.children ? d.children.length : 0);
 
     // Create the tree layout with size proportional to the total number of children and maximum depth
-    const treeLayout = d3.tree().size([(totalChildren + 1) * 10, (maxDepth + 1) * 240]);
+    const treeLayout = d3.tree()
+        .size([(totalChildren + 1) * 20, (maxDepth + 1) * 300])
+        .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
     treeLayout(root);
 
     // Log the size of the tree layout
     console.log(treeLayout.size());
 
-    // Create the links
-    const link = svg.append('g')
-        .selectAll('line')
-        .data(root.links())
-        .enter().append('line')
-        .attr('stroke', '#999')
-        .attr('stroke-opacity', 0.6)
-        .attr('x1', d => d.source.y)
-        .attr('y1', d => d.source.x)
-        .attr('x2', d => d.target.y)
-        .attr('y2', d => d.target.x);
+    // Define the arrowhead marker
+    svg.append('defs').append('marker')
+        .attr('id', 'arrowhead')
+        .attr('viewBox', '-0 -5 10 10')
+        .attr('refX', 0)
+        .attr('refY', 0)
+        .attr('orient', 'auto')
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('xoverflow', 'visible')
+        .append('svg:path')
+        .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+        .attr('fill', '#3f3f46')
+        .style('stroke','none');
 
     // Create the nodes
     const node = svg.append('g')
-        .selectAll('circle')
+        .selectAll('rect')
         .data(root.descendants())
-        .enter().append('circle')
-        .attr('r', 5)
-        .attr('fill', '#69b3a2')
-        .attr('cx', d => d.y)
-        .attr('cy', d => d.x);
+        .enter().append('rect')
+        .attr('height', 20) // height of the rectangle
+        .attr('fill', 'white') // color of the rectangle
+        .attr('stroke', '#3f3f46') // color of the outline
+        .attr('stroke-width', 1) // width of the outline
+        .attr('rx', 5) // horizontal radius of the corners
+        .attr('ry', 5) // vertical radius of the corners
+        .each(function(d) {
+            // Create a temporary text element to calculate the width of the text
+            const tempText = svg.append('text').text(d.data.name);
+            const textWidth = tempText.node().getBBox().width;
+            tempText.remove();
+
+            // Set the width of the rectangle to be slightly larger than the text
+            const rectWidth = textWidth + 10;
+            d3.select(this).attr('width', rectWidth);
+
+            // Store the width in the data for later use
+            d.data.width = rectWidth;
+        })
+        .attr('x', d => d.y + 26.5)
+        .attr('y', d => d.x - 10);
 
     // Create the labels
     const labels = svg.append('g')
@@ -109,8 +131,20 @@ function createGraph(nodes, links) {
         .text(d => d.data.name)
         .attr('dx', 12)
         .attr('dy', '.35em')
-        .attr('x', d => d.y)
+        .attr('x', d => d.y + 20)
         .attr('y', d => d.x);
+
+    // Create the links
+    const link = svg.append('g')
+        .selectAll('path')
+        .data(root.links())
+        .enter().append('path')
+        .attr('d', d3.linkHorizontal()
+            .source(d => [d.source.y + 27 + d.source.data.width, d.source.x])
+            .target(d => [d.target.y + 20, d.target.x]))
+        .attr('stroke', '#3f3f46')
+        .attr('fill', 'none')
+        .attr('marker-end', 'url(#arrowhead)'); // Add the arrowhead marker
 
     // Attach a zoom event to the SVG
     svg.call(d3.zoom().on("zoom", function () {
