@@ -106,9 +106,6 @@ function createGraph(nodes, links) {
     const svg = d3.select('#svg-container').append('svg')
         .attr('width', svgWidth)
         .attr('height', svgHeight)
-        .call(d3.zoom().on("zoom", function () {
-            svg.attr("transform", d3.event.transform)
-        }))
         .append('g');
 
     // Create a root for the tree layout
@@ -233,25 +230,33 @@ function createGraph(nodes, links) {
         .attr('fill', 'none')
         .attr('marker-end', 'url(#arrowhead)');
 
-    // Attach a zoom event to the SVG
-    svg.call(d3.zoom().on("zoom", function () {
-        requestAnimationFrame(() => {
-            svg.attr("transform", d3.event.transform);
+    let svgContainer = d3.select('#svg-container');
 
-            // Check if any nodes have come into view and render them if necessary
-            node.each(function(d) {
-                const circle = d3.select(this);
-                const transform = d3.zoomTransform(svg.node());
-                const isVisible = (transform.applyY(d.x) > 0 && transform.applyY(d.x) < svgHeight) &&
-                    (transform.applyX(d.y) > 0 && transform.applyX(d.y) < svgWidth);
+    // Create the zoom behavior
+    let zoom = d3.zoom().on("zoom", function () {
+        svg.attr("transform", d3.event.transform);
+    });
 
-                if (isVisible && circle.attr('fill') === '#69b3a2') {
-                    // The node is visible and has not been rendered yet, so render it
-                    circle.attr('fill', '#69b3a2');
-                    labels.filter(label => label === d).attr('opacity', 1);
-                    link.filter(l => l.source === d || l.target === d).attr('stroke-opacity', 0.6);
-                }
-            });
-        });
-    }));
+    // Apply the zoom behavior to the SVG
+    svgContainer.call(zoom);
+
+    // Assume `nodeElement` is the SVG element you want to zoom onto
+    let nodeElement = svg.select('#svg-container > svg > g > g:nth-child(2) > rect:nth-child(1)').node();
+    // Check if the node element exists
+    if (nodeElement) {
+        // Get the bounding box of the node
+        let bbox = nodeElement.getBBox();
+
+        // Calculate the center of the node
+        let y = -(bbox.y * 0.9987);
+        if (y > -1000) {
+            y = -(y)
+        }
+
+        // Create the initial transform
+        let initialTransform = d3.zoomIdentity.translate(0, y);
+
+        // Apply the initial transform to the zoom behavior
+        svgContainer.call(zoom.transform, initialTransform);
+    }
 }
