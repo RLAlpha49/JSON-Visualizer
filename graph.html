@@ -5,11 +5,65 @@
     <title>JSON Graph</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/mode/javascript/javascript.min.js"></script>
+    <script>
+        window.onload = function() {
+            const resizer = document.getElementById('resizer');
+            const jsonInput = document.getElementById('json-input');
+            const svgContainer = document.getElementById('svg-container');
+
+            let isResizing = false;
+            let initialMousePosition;
+
+            resizer.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                isResizing = true;
+                initialMousePosition = e.clientX;
+                document.addEventListener('mousemove', mousemove);
+                document.addEventListener('mouseup', mouseup);
+            });
+
+            function mousemove(e) {
+                if (!isResizing) return;
+                const windowWidth = window.innerWidth;
+                const jsonInputWidth = (e.clientX / windowWidth) * 100;
+                const svgContainerWidth = 100 - jsonInputWidth;
+                jsonInput.style.width = `${jsonInputWidth}%`;
+                svgContainer.style.width = `${svgContainerWidth}%`;
+                initialMousePosition = e.clientX;
+            }
+
+            function mouseup() {
+                isResizing = false;
+                document.removeEventListener('mousemove', mousemove);
+                document.removeEventListener('mouseup', mouseup);
+            }
+        }
+    </script>
+    <script>
+        window.onload = function() {
+            const darkModeButton = document.getElementById('dark-mode-button');
+
+            darkModeButton.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                const svgElements = document.querySelectorAll('svg');
+                svgElements.forEach(svg => {
+                    svg.classList.toggle('dark-mode');
+                });
+            });
+        }
+    </script>
 </head>
 <body>
-    <textarea id="json-input"></textarea>
-    <button id="graph-button">Display JSON Graph</button>
-    <a href="index.html">Go back to JSON Viewer</a>
+    <div id="json-input">
+        <button id="graph-button">Display JSON Graph</button>
+        <button id="dark-mode-button">Dark Mode</button>
+        <!-- CodeMirror editor will be initialized here -->
+    </div>
+    <div id="resizer"></div>
+    <div id="svg-container"></div>
     <script src="graph.js"></script>
 </body>
 </html>

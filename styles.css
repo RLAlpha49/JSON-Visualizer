@@ -1,13 +1,178 @@
-/* styles.css */
 body {
-    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
 }
 
 #json-input {
+    width: 30%;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#resizer {
+    width: 10px;
+    background: #aaa;
+    cursor: ew-resize;
+}
+
+#svg-container {
+    width: 70%;
+    overflow: hidden;
+}
+
+.dark-mode {
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+.CodeMirror {
     width: 100%;
-    height: 200px;
+    height: 100% !important;
+}
+
+#graph-button {
+    position: relative;
+    margin-top: 10px;
 }
 
 #json-display {
     margin-top: 20px;
+}
+
+.dark-mode svg g rect {
+    fill: #2b2c3e !important;
+    stroke: #475872 !important;
+}
+
+.dark-mode svg g text {
+    fill: #fff !important;
+    stroke: none !important
+}
+
+.dark-mode .CodeMirror {
+    background: #2d2d2d;
+    color: #f8f8f2;
+}
+
+.dark-mode .CodeMirror-gutters {
+    background: #2d2d2d;
+    border-right: none;
+}
+
+.dark-mode .CodeMirror-linenumber {
+    color: #75715e;
+}
+
+.dark-mode .CodeMirror-cursor {
+    border-left: 1px solid #f8f8f2;
+}
+
+.dark-mode .CodeMirror-selected {
+    background: #49483e;
+}
+
+.dark-mode .CodeMirror-line::selection, .dark-mode .CodeMirror-line > span::selection, .dark-mode .CodeMirror-line > span > span::selection {
+    background: rgba(73, 72, 62, .99);
+}
+
+.dark-mode .cm-keyword {
+    color: #f92672 !important;
+}
+
+.dark-mode .cm-atom {
+    color: #ae81ff !important;
+}
+
+.dark-mode .cm-number {
+    color: #81c3a8 !important;
+}
+
+.dark-mode .cm-def {
+    color: #fd971f !important;
+}
+
+.dark-mode .cm-variable {
+    color: #f8f8f2 !important;
+}
+
+.dark-mode .cm-punctuation {
+    color: #f8f8f2 !important;
+}
+
+.dark-mode .cm-string.cm-property {
+    color: #8cdcec !important;
+}
+
+.dark-mode .cm-operator {
+    color: #f92672 !important;
+}
+
+.dark-mode .cm-comment {
+    color: #75715e !important;
+}
+
+.dark-mode .cm-string {
+    color: #ce9166 !important;
+}
+
+.dark-mode .cm-string-2 {
+    color: #e6db74 !important;
+}
+
+.dark-mode .cm-meta {
+    color: #75715e !important;
+}
+
+.dark-mode .cm-qualifier {
+    color: #75715e !important;
+}
+
+.dark-mode .cm-builtin {
+    color: #fd971f !important;
+}
+
+.dark-mode .cm-bracket {
+    color: #f8f8f2 !important;
+}
+
+.dark-mode .cm-tag {
+    color: #f92672 !important;
+}
+
+.dark-mode .cm-attribute {
+    color: #a6e22e !important;
+}
+
+.dark-mode .cm-header {
+    color: #ae81ff !important;
+}
+
+.dark-mode .cm-quote {
+    color: #75715e !important;
+}
+
+.dark-mode .cm-hr {
+    color: #75715e !important;
+}
+
+.dark-mode .cm-link {
+    color: #ae81ff !important;
+}
+
+.dark-mode .cm-error {
+    background: #f92672 !important;
+    color: #f8f8f2 !important;
+}
+
+.dark-mode .CodeMirror-activeline-background {
+    background: #3e3d32 !important;
+}
+
+.dark-mode .CodeMirror-matchingbracket {
+    text-decoration: underline;
+    color: white !important;
 }

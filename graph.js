@@ -1,8 +1,18 @@
-// graph.js
+// Initialize CodeMirror
+const editor = CodeMirror(document.getElementById('json-input'), {
+    lineNumbers: true,
+    mode: "application/json",
+    theme: "default",
+    lineWrapping: true,
+});
+
 document.getElementById('graph-button').addEventListener('click', function() {
-    const input = document.getElementById('json-input').value;
+    const jsonData = editor.getValue();
     try {
-        const json = JSON.parse(input);
+        // Clear the SVG container
+        document.getElementById('svg-container').innerHTML = '';
+
+        const json = JSON.parse(jsonData);
 
         // Convert the JSON into nodes and links
         const { nodes, links } = convertJsonToGraph(json);
@@ -89,15 +99,11 @@ function calculateMultiplicationFactor(totalChildren) {
 }
 
 function createGraph(nodes, links) {
-    // Calculate the total height of other elements
-    const otherElementsHeight = document.getElementById('json-input').offsetHeight +
-                                document.getElementById('graph-button').offsetHeight;
-
     // Calculate the height and width for the SVG
-    const svgHeight = window.innerHeight - otherElementsHeight;
+    const svgHeight = window.innerHeight;
     const svgWidth = window.innerWidth;
 
-    const svg = d3.select('body').append('svg')
+    const svg = d3.select('#svg-container').append('svg')
         .attr('width', svgWidth)
         .attr('height', svgHeight)
         .call(d3.zoom().on("zoom", function () {
