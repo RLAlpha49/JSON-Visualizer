@@ -2,7 +2,6 @@
   "name": "json-visualizer",
   "version": "1.0.0",
   "private": true,
-    "homepage": "https://rlalpha49.github.io/JSON-Visualizer",
   "dependencies": {
     "@codemirror/gutter": "^0.19.9",
     "@codemirror/lang-javascript": "^6.2.2",
@@ -16,7 +15,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "thememirror": "^2.0.1",
     "web-vitals": "^2.1.4"
   },
