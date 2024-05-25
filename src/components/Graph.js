@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import '../styles.css';
 import * as d3 from 'd3';
 import {EditorState, StateEffect, StateField} from '@codemirror/state';
@@ -32,8 +32,29 @@ function Graph() {
     const jsonInputRef = useRef(null);
     const svgContainerRef = useRef(null);
 
-    const convertJsonToGraph = (json, parent = null, nodes = [], links = [], id = 0) => {
-        const maxLineLength = 50;
+    const convertJsonToGraph = useCallback((json, parent = null, nodes = [], links = [], id = 0) => {
+        const maxLineLength = 9999;
+
+        const processItem = (item, index, node, nodes, links, id) => {
+            if (typeof item === 'object' && item !== null) {
+                const indexNode = {id: id++, name: `Index ${index}`, parentId: node.id};
+                nodes.push(indexNode);
+                links.push({source: node.id, target: indexNode.id});
+
+                if (typeof item === 'object') {
+                    id = convertJsonToGraph(item, indexNode, nodes, links, id).id;
+                } else {
+                    const valueNode = {id: id++, name: item, parentId: indexNode.id};
+                    nodes.push(valueNode);
+                    links.push({source: indexNode.id, target: valueNode.id});
+                }
+            } else {
+                const valueNode = {id: id++, name: item, parentId: node.id};
+                nodes.push(valueNode);
+                links.push({source: node.id, target: valueNode.id});
+            }
+            return id;
+        };
 
         if (parent === null) {
             const node = {id: id++, name: 'root', parentId: null};
@@ -47,24 +68,9 @@ function Graph() {
                 let node;
                 if (Array.isArray(json[key])) {
                     node = {id: id++, name: `${key} (${json[key].length})`, parentId: parent.id};
+                    // eslint-disable-next-line no-loop-func
                     json[key].forEach((item, index) => {
-                        if (typeof item === 'object' && item !== null) {
-                            const indexNode = {id: id++, name: `Index ${index}`, parentId: node.id};
-                            nodes.push(indexNode);
-                            links.push({source: node.id, target: indexNode.id});
-
-                            if (typeof item === 'object') {
-                                id = convertJsonToGraph(item, indexNode, nodes, links, id).id;
-                            } else {
-                                const valueNode = {id: id++, name: item, parentId: indexNode.id};
-                                nodes.push(valueNode);
-                                links.push({source: indexNode.id, target: valueNode.id});
-                            }
-                        } else {
-                            const valueNode = {id: id++, name: item, parentId: node.id};
-                            nodes.push(valueNode);
-                            links.push({source: node.id, target: valueNode.id});
-                        }
+                        id = processItem(item, index, node, nodes, links, id);
                     });
                 } else {
                     node = {id: id++, name: key, parentId: parent.id};
@@ -88,7 +94,7 @@ function Graph() {
         }
 
         return {nodes, links, id};
-    }
+    }, []);
 
     const calculateMultiplicationFactor = (totalChildren) => {
         if (totalChildren > 9000) {
@@ -102,7 +108,7 @@ function Graph() {
         }
     }
 
-    const createGraph = (nodes, links) => {
+    const createGraph = useCallback((nodes, links) => {
         // Calculate the height and width for the SVG
         const svgHeight = window.innerHeight;
         const svgWidth = window.innerWidth;
@@ -148,10 +154,13 @@ function Graph() {
             .style('stroke', 'none');
 
         // Create the nodes
-        const node = svg.append('g')
-            .selectAll('rect')
+        const nodesGroup = svg.append('g')
+            .selectAll('g')
             .data(root.descendants())
-            .enter().append('rect')
+            .enter().append('g');
+
+        // eslint-disable-next-line no-unused-vars
+        const node = nodesGroup.append('rect')
             .attr('fill', 'white')
             .attr('stroke', '#3f3f46')
             .attr('stroke-width', 1)
@@ -160,25 +169,80 @@ function Graph() {
             .each(function (d) {
                 // Split the name into separate lines
                 const lines = d.data.name.split('\n');
+
+                // These variables should be reset for each node
                 let maxLineWidth = 0;
-                let lineHeight = 0;
+                let totalHeight = 0;
 
-                // Create a temporary text element to calculate the width of each line
+                // Define the maximum length of a line
+                const maxLineLength = 50;
+
+                // Create a temporary div element to calculate the width and height of each line
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.visibility = 'hidden';
+                tempDiv.style.whiteSpace = 'pre-wrap';
+                document.body.appendChild(tempDiv);
+
+                // Create a parentDiv for all lines
+                const parentDiv = document.createElement('div');
+
                 lines.forEach(line => {
-                    const tempText = svg.append('text').text(line);
-                    const lineWidth = tempText.node().getBBox().width;
-                    lineHeight = tempText.node().getBBox().height;
-                    tempText.remove();
+                    // Create a parent span for all lines
+                    const parentSpan = document.createElement('span');
 
-                    // Update maxLineWidth if this line is wider
-                    if (lineWidth > maxLineWidth) {
-                        maxLineWidth = lineWidth;
+                    // Set the display style to block
+                    parentSpan.style.display = 'block';
+
+                    // Split the line into two parts: before and after the FIRST colon
+                    let index = line.indexOf(':');
+                    let key = line.substring(0, index + 1); // Include the colon in the key
+                    let value = line.substring(index + 1); // Everything after the colon is the value
+
+                    // Create a temporary span for the key
+                    const tempKeySpan = document.createElement('span');
+                    tempKeySpan.textContent = key;
+
+                    // Create a temporary span for the value
+                    const tempValueSpan = document.createElement('span');
+                    tempValueSpan.textContent = value;
+
+                    // Append the key and value spans to the parent span
+                    parentSpan.appendChild(tempKeySpan);
+                    parentSpan.appendChild(tempValueSpan);
+
+                    // Set the width of the parent span only if the length of the text content exceeds maxLineLength
+                    if ((key.length + value.length) > maxLineLength) {
+                        parentSpan.style.width = `${maxLineLength}ch`;
                     }
+
+                    // Append the parent span to the parent div
+                    parentDiv.appendChild(parentSpan);
                 });
 
+                // Append the parent span to the temporary div
+                tempDiv.appendChild(parentDiv);
+
+                const lineWidth = parentDiv.offsetWidth;
+                const lineHeight = parentDiv.offsetHeight;
+
+                // Update maxLineWidth if this line is wider
+                if (lineWidth > maxLineWidth) {
+                    maxLineWidth = lineWidth;
+                }
+
+                // Add the height of this line to the total height
+                totalHeight += lineHeight;
+
+                // Clear the temporary div
+                tempDiv.innerHTML = '';
+
+                // Remove the temporary div from the body
+                document.body.removeChild(tempDiv);
+
                 // Set the width and height of the rectangle
-                const rectWidth = maxLineWidth + 30;
-                const rectHeight = lines.length > 1 ? 30 * (lines.length - 1) : 20;
+                const rectWidth = maxLineWidth + 20;
+                const rectHeight = totalHeight + 20;
                 d3.select(this).attr('width', rectWidth).attr('height', rectHeight);
 
                 // Store the width and height in the data for later use
@@ -189,36 +253,49 @@ function Graph() {
             .attr('y', d => d.x - d.data.height / 2);
 
         // Create the labels
-        const labels = svg.append('g')
-            .selectAll('text')
-            .data(root.descendants())
-            .enter().append('text')
-            .attr('dx', 12)
-            .attr('x', d => d.y + 20)
-            .attr('y', d => {
-                const lines = d.data.name.split('\n');
-                return lines.length > 1 ? d.x + 15 : d.x + 5;
-            })
-            .each(function (d) {
+        // eslint-disable-next-line no-unused-vars
+        const labels = nodesGroup.append('foreignObject')
+            .attr('width', d => d.data.width)
+            .attr('height', d => d.data.height)
+            .attr('x', d => d.y + 26.5)
+            .attr('y', d => d.x - d.data.height / 2)
+            .each(function (d, i) {
                 // Split the name into separate lines
                 const lines = d.data.name.split('\n');
                 const lineHeight = 1.5;
+                // eslint-disable-next-line no-unused-vars
                 const totalHeight = lines.length * lineHeight;
 
-                for (let i = 0; i < lines.length; i++) {
-                    const tspan = d3.select(this).append('tspan')
-                        .text(lines[i])
-                        .attr('dy', `${i === 0 ? -totalHeight / 2 + lineHeight / 2 : lineHeight}em`);
+                for (let j = 0; j < lines.length; j++) {
+                    // Split the line into two parts: before and after the FIRST colon
+                    let index = lines[j].indexOf(':');
+                    let key = lines[j].substring(0, index + 1); // Include the colon in the key
+                    let value = lines[j].substring(index + 1); // Everything after the colon is the value
 
-                    if (i === 0) {
-                        tspan.attr('x', d => d.y + 30);
-                    } else if (i > 0) {
-                        tspan.attr('x', d => d.y + 42);
+                    // Create a parent span for the key-value pair
+                    const parentSpan = d3.select(this).append('xhtml:span')
+                        .style('display', 'block') // Add this line
+                        .style('padding-left', '10px'); // Add left padding
+
+                    // Add top padding only to the first line of each foreign object
+                    if (j === 0) {
+                        parentSpan.style('padding-top', '10px');
                     }
+
+                    // Create a span for the key
+                    // eslint-disable-next-line no-unused-vars
+                    const keySpan = parentSpan.append('xhtml:span')
+                        .text(key); // Add the colon back to the key
+
+                    // Create a span for the value
+                    // eslint-disable-next-line no-unused-vars
+                    const valueSpan = parentSpan.append('xhtml:span')
+                        .text(value);
                 }
             });
 
         // Create the links
+        // eslint-disable-next-line no-unused-vars
         const link = svg.append('g')
             .selectAll('path')
             .data(root.links())
@@ -263,7 +340,7 @@ function Graph() {
             // Apply the initial transform to the zoom behavior
             svgContainer.call(zoom.transform, initialTransform);
         }
-    }
+    }, []);
 
     useEffect(() => {
         const resizer = document.getElementById('resizer');
@@ -271,6 +348,7 @@ function Graph() {
         const svgContainer = svgContainerRef.current;
 
         let isResizing = false;
+        // eslint-disable-next-line no-unused-vars
         let initialMousePosition;
 
         const mousemove = (e) => {
@@ -367,7 +445,7 @@ function Graph() {
             document.removeEventListener('mousemove', mousemove);
             document.removeEventListener('mouseup', mouseup);
         }
-    }, []);
+    }, [convertJsonToGraph, createGraph]);
 
     return (
         <div id="graph">
