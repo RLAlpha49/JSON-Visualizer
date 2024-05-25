@@ -421,23 +421,25 @@ function Graph() {
 
         document.getElementById('graph-button').addEventListener('click', function () {
             const jsonData = view.state.doc.toString();
-            try {
-                // Clear the SVG container
-                document.getElementById('svg-container').innerHTML = '';
+            if (jsonData.trim() !== "") { // Check if jsonData is not an empty string
+                try {
+                    // Clear the SVG container
+                    document.getElementById('svg-container').innerHTML = '';
 
-                const json = JSON.parse(jsonData);
+                    const json = JSON.parse(jsonData);
 
-                // Convert the JSON into nodes and links
-                const {nodes, links} = convertJsonToGraph(json);
+                    // Convert the JSON into nodes and links
+                    const {nodes, links} = convertJsonToGraph(json);
 
-                // Log the nodes and links
-                console.log('Nodes:', nodes);
-                console.log('Links:', links);
+                    // Log the nodes and links
+                    console.log('Nodes:', nodes);
+                    console.log('Links:', links);
 
-                // Create the graph
-                createGraph(nodes, links);
-            } catch (error) {
-                console.log(error);
+                    // Create the graph
+                    createGraph(nodes, links);
+                } catch (error) {
+                    console.log(error);
+                }
             }
         });
 
