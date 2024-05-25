@@ -31,7 +31,7 @@ jobs:
 
       - name: Build and Deploy
         run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.git
           npm run deploy
         env:
           CI: false
