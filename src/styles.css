@@ -1,0 +1,112 @@
+body {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+#root {
+    width: 100%;
+}
+
+#graph {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+#json-input {
+    width: 30%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#buttons {
+    height: 5%;
+}
+
+#editor {
+    height: 95%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#resizer {
+    width: 0.5%;
+    background: #aaa;
+    cursor: ew-resize;
+}
+
+#svg-container {
+    width: 69.5%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.dark-mode {
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+.cm-editor {
+    width: 100%;
+    height: 100% !important;
+}
+
+/* Hide the scrollbar by default */
+.cm-scroller::-webkit-scrollbar {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Show the scrollbar when the editor is hovered */
+.cm-editor:hover .cm-scroller::-webkit-scrollbar {
+    opacity: 1;
+}
+
+/* Style the scrollbar */
+.cm-scroller::-webkit-scrollbar {
+    width: 10px;
+}
+
+.cm-scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Hide the scrollbar thumb by default */
+.cm-scroller::-webkit-scrollbar-thumb {
+    background: #888;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Show the scrollbar thumb when the editor is hovered */
+.cm-editor:hover .cm-scroller::-webkit-scrollbar-thumb {
+    opacity: 1;
+}
+
+/* Show the line numbers when the editor is hovered */
+.cm-editor:hover .cm-gutters .CodeMirror-linenumber {
+    color: inherit !important;
+}
+
+#graph-button {
+    position: relative;
+    margin-top: 10px;
+}
+
+#json-display {
+    margin-top: 20px;
+}
+
+.dark-mode svg g rect {
+    fill: #2b2c3e !important;
+    stroke: #475872 !important;
+}
+
+.dark-mode svg g text {
+    fill: #fff !important;
+    stroke: none !important
+}
