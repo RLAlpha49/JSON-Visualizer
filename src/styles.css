@@ -16,6 +16,7 @@ body {
 }
 
 #json-input {
+    z-index: 1000;
     width: 30%;
     height: 100%;
     display: flex;
@@ -34,9 +35,14 @@ body {
 }
 
 #resizer {
+    z-index: 1000;
     width: 0.5%;
     background: #aaa;
     cursor: ew-resize;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 #svg-container {

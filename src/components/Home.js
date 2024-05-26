@@ -3,7 +3,7 @@ import '../styles.css';
 
 function Home() {
     useEffect(() => {
-        document.getElementById('format-button').addEventListener('click', function() {
+        document.getElementById('format-button').addEventListener('click', function () {
             const input = document.getElementById('json-input').value;
             const display = document.getElementById('json-display');
 
