@@ -1,6 +1,8 @@
 import React from 'react';
-import { Canvas, Edge, Node } from 'reaflow';
-import { Space } from "react-zoomable-ui";
+import {Canvas, Edge, Node} from 'reaflow';
+import {Space} from "react-zoomable-ui";
+import {calculateNodeSize} from './utils/CalculateNodeSize';
+import {getColorBasedOnNodeType, getColorBasedOnType} from './utils/TextColor';
 
 export function GraphCanvas(nodes, links) {
     const handleNodeClick = (event) => {
@@ -12,43 +14,11 @@ export function GraphCanvas(nodes, links) {
             <Canvas
                 className="graph-canvas"
                 nodes={nodes.map(node => {
-                    let maxWidth;
-                    let maxHeight;
-
-                    // Check if node.data is an object or a string
-                    if (typeof node.data === 'object' && node.data !== null) {
-                        // Iterate over the properties and find the maximum length of key-value pair
-                        maxWidth = Math.max(...Object.entries(node.data).map(([key, value]) => (`${key}:${value}`).length));
-                    } else if (typeof node.data === 'string') {
-                        // If it's a string, use its length
-                        maxWidth = node.data.length;
-                    }
-
-                    // Calculate the maximum height
-                    if (typeof node.data === 'object' && node.data !== null) {
-                        maxHeight = (Object.keys(node.data).length) * 1.88;
-                    } else {
-                        maxHeight = 1;
-                    }
-
-                    // console.log('Node:', node);
-                    // console.log('Max Width:', maxWidth);
-                    // console.log('Max Height:', maxHeight);
-
-                    // Set a base size
-                    const baseSize = 30;
-
-                    // Set the size per character
-                    const sizePerCharacterHeight = 9;
-                    const sizePerCharacterWidth = 7;
-
-                    // Calculate the height and width
-                    const height = baseSize + maxHeight * sizePerCharacterHeight
-                    const width = baseSize + maxWidth * sizePerCharacterWidth;
-
+                    const {height, width} = calculateNodeSize(node);
                     return {
                         id: node.id,
                         data: node.data,
+                        type: node.type,
                         height: height,
                         width: width
                     };
@@ -65,18 +35,46 @@ export function GraphCanvas(nodes, links) {
                 >
                     {event => {
                         return (
-                            <foreignObject height={event.height} width={event.width} x={0} y={0} style={{pointerEvents: 'none'}}>
+                            <foreignObject height={event.height} width={event.width} x={0} y={0}
+                                           style={{pointerEvents: 'none'}}>
                                 <div style={{
                                     padding: 10,
                                     textAlign: 'center',
                                     pointerEvents: 'none'
                                 }}>
                                     {typeof event.node.data === 'string' ?
-                                        <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", pointerEvents: 'none'}}>{event.node.data}</span> :
+                                        <span style={{
+                                            color: getColorBasedOnNodeType(event.node.type),
+                                            fontFamily: "monospace",
+                                            fontWeight: '500',
+                                            fontSize: "12px",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            pointerEvents: 'none'
+                                        }}>{event.node.data}</span> :
                                         event.node.data ? Object.entries(event.node.data).map(([key, value], index) => (
-                                            <div key={index} style={{pointerEvents: 'none'}}>
-                                                <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", pointerEvents: 'none'}}>{key}:</span>
-                                                <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", pointerEvents: 'none'}}>{JSON.stringify(value, null, 2)}</span>
+                                            <div key={index} style={{pointerEvents: 'none', textAlign: 'left'}}>
+                                                <span style={{
+                                                    color: '#51b6ff',
+                                                    fontFamily: "monospace",
+                                                    fontWeight: '500',
+                                                    fontSize: "12px",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                    whiteSpace: "nowrap",
+                                                    pointerEvents: 'none'
+                                                }}>{key}: </span>
+                                                <span style={{
+                                                    color: getColorBasedOnType(value),
+                                                    fontFamily: "monospace",
+                                                    fontWeight: '500',
+                                                    fontSize: "12px",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                    whiteSpace: "nowrap",
+                                                    pointerEvents: 'none'
+                                                }}>{JSON.stringify(value, null, 2)}</span>
                                             </div>
                                         )) : <h3 style={{color: 'white', pointerEvents: 'none'}}>{event.node.text}</h3>}
                                 </div>

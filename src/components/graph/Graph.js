@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import GraphButton from './GraphButton';
-import DarkModeButton from './DarkModeButton';
+import React, {useEffect, useRef, useState} from 'react';
+import GraphButton from './buttons/GraphButton';
+import DarkModeButton from './buttons/DarkModeButton';
 import Editor from './Editor';
-import {ConvertJsonToGraph} from './GraphUtils';
+import {ConvertJsonToGraph} from './utils/ConvertJson';
 import {GraphCanvas} from "./GraphCanvas";
 
 function Graph() {
@@ -93,10 +93,10 @@ function Graph() {
         <div id="graph">
             <div id="json-input" ref={jsonInputRef}>
                 <div id="buttons">
-                    <GraphButton onClick={handleGraphButtonClick} />
-                    <DarkModeButton onClick={handleDarkModeButtonClick} />
+                    <GraphButton onClick={handleGraphButtonClick}/>
+                    <DarkModeButton onClick={handleDarkModeButtonClick}/>
                 </div>
-                <Editor onGraphButtonClick={setJsonData} />
+                <Editor onGraphButtonClick={setJsonData}/>
             </div>
             <div id="resizer"></div>
             <div id="svg-container" ref={svgContainerRef}>

@@ -8,19 +8,19 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
                 }
             }
 
-            const indexNode = {id: id++, data: nodeData, parentId: node.id};
+            const indexNode = {id: id++, data: nodeData, parentId: node.id, type: 'data'};
             nodes.push(indexNode);
             edges.push({from: node.id, to: indexNode.id});
 
             if (typeof item === 'object') {
                 id = ConvertJsonToGraph(item, indexNode, nodes, edges, id).id;
             } else {
-                const valueNode = {id: id++, data: item, parentId: indexNode.id};
+                const valueNode = {id: id++, data: item, parentId: indexNode.id, type: 'data'};
                 nodes.push(valueNode);
                 edges.push({from: indexNode.id, to: valueNode.id});
             }
         } else {
-            const valueNode = {id: id++, data: item, parentId: node.id};
+            const valueNode = {id: id++, data: item, parentId: node.id, type: 'data'};
             nodes.push(valueNode);
             edges.push({from: node.id, to: valueNode.id});
         }
@@ -35,7 +35,7 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
             }
         }
 
-        const node = {id: id++, data: rootData, parentId: null};
+        const node = {id: id++, data: rootData, parentId: null, type: 'root'};
         nodes.push(node);
         parent = node;
     }
@@ -44,13 +44,13 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
         if (Array.isArray(json[key]) || (typeof json[key] === 'object' && json[key] !== null)) {
             let node;
             if (Array.isArray(json[key])) {
-                node = {id: id++, data: `${key} (${json[key].length})`, parentId: parent.id};
+                node = {id: id++, data: `${key} (${json[key].length})`, parentId: parent.id, type: 'property-array'};
                 // eslint-disable-next-line no-loop-func
                 json[key].forEach((item, index) => {
                     id = processItem(item, index, node, nodes, edges, id, ConvertJsonToGraph);
                 });
             } else {
-                node = {id: id++, data: key, parentId: parent.id};
+                node = {id: id++, data: key, parentId: parent.id, type: 'property-object'};
                 id = ConvertJsonToGraph(json[key], node, nodes, edges, id).id;
             }
 
@@ -60,7 +60,12 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
             if (typeof json[key] === 'object' && !Array.isArray(json[key]) && json[key] !== null) {
                 for (const subKey in json[key]) {
                     if (!Array.isArray(json[key][subKey])) {
-                        const subNode = {id: id++, data: {[subKey]: json[key][subKey]}, parentId: node.id};
+                        const subNode = {
+                            id: id++,
+                            data: {[subKey]: json[key][subKey]},
+                            parentId: node.id,
+                            type: 'data'
+                        };
                         nodes.push(subNode);
                         edges.push({from: node.id, to: subNode.id});
                     }

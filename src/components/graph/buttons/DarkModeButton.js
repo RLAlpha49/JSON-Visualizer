@@ -1,6 +1,6 @@
 import React from 'react';
 
-function DarkModeButton({ onClick }) {
+function DarkModeButton({onClick}) {
     return (
         <button id="dark-mode-button" onClick={onClick}>
             Dark Mode
