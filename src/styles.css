@@ -106,13 +106,3 @@ body {
 #json-display {
     margin-top: 20px;
 }
-
-.dark-mode svg g rect {
-    fill: #2b2c3e !important;
-    stroke: #475872 !important;
-}
-
-.dark-mode svg g text {
-    fill: #fff !important;
-    stroke: none !important
-}

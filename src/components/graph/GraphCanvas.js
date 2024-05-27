@@ -3,6 +3,10 @@ import { Canvas, Edge, Node } from 'reaflow';
 import { Space } from "react-zoomable-ui";
 
 export function GraphCanvas(nodes, links) {
+    const handleNodeClick = (event) => {
+        console.log('Node Click:', event.id);
+    };
+
     return (
         <Space>
             <Canvas
@@ -54,22 +58,27 @@ export function GraphCanvas(nodes, links) {
                     from: link.from,
                     to: link.to,
                 }))}
-                node={<Node>
+                node={<Node
+                    onClick={handleNodeClick}
+                    animated={false}
+                    label={null}
+                >
                     {event => {
                         return (
-                            <foreignObject height={event.height} width={event.width} x={0} y={0}>
+                            <foreignObject height={event.height} width={event.width} x={0} y={0} style={{pointerEvents: 'none'}}>
                                 <div style={{
                                     padding: 10,
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    pointerEvents: 'none'
                                 }}>
                                     {typeof event.node.data === 'string' ?
-                                        <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px"}}>{event.node.data}</span> :
+                                        <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", pointerEvents: 'none'}}>{event.node.data}</span> :
                                         event.node.data ? Object.entries(event.node.data).map(([key, value], index) => (
-                                            <div key={index}>
-                                                <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px"}}>{key}:</span>
-                                                <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px"}}>{JSON.stringify(value, null, 2)}</span>
+                                            <div key={index} style={{pointerEvents: 'none'}}>
+                                                <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", pointerEvents: 'none'}}>{key}:</span>
+                                                <span style={{color: 'white', fontFamily: "monospace", fontWeight: '500', fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", pointerEvents: 'none'}}>{JSON.stringify(value, null, 2)}</span>
                                             </div>
-                                        )) : <h3 style={{color: 'white'}}>{event.node.text}</h3>}
+                                        )) : <h3 style={{color: 'white', pointerEvents: 'none'}}>{event.node.text}</h3>}
                                 </div>
                             </foreignObject>
                         );
