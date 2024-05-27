@@ -1,80 +1,85 @@
-import React, { useEffect, useRef } from 'react';
-import { EditorState, StateEffect, StateField } from '@codemirror/state';
-import { EditorView, lineNumbers, ViewUpdate } from '@codemirror/view';
-import { javascript } from '@codemirror/lang-javascript';
-import { dracula } from 'thememirror';
+import React, { useEffect, useRef, useState } from 'react';
+import Editor from "@monaco-editor/react";
 
-// Define a state effect that will replace the document with formatted JSON
-const formatJsonEffect = StateEffect.define({map: (effect, mapping) => effect});
+function CodeEditor({ onGraphButtonClick }) {
+    const editorRef = useRef(null);
+    const [timeoutId, setTimeoutId] = useState(null);
 
-// Define a state field that responds to the formatJsonEffect by replacing the document
-const formatJsonField = StateField.define({
-    create: () => null,
-    update(value, tr) {
-        for (let effect of tr.effects) {
-            if (effect.is(formatJsonEffect)) {
-                return effect.value;
+    const handleEditorDidMount = (editor, monaco) => {
+        editorRef.current = editor;
+
+        // Add a paste event listener
+        editor.onDidPaste(() => {
+            // Get the first line of the editor
+            let firstLine = '';
+            try {
+                firstLine = editor.getModel().getLineAt(1);
+            } catch (error) {
+                console.log(error);
             }
-        }
-        return value;
-    },
-    provide: f => EditorView.updateListener.of((v: ViewUpdate) => {
-        if (v.docChanged) {
-            let tr = v.state.update({effects: formatJsonEffect.of(null)});
-            v.view.dispatch(tr);
-        }
-    })
-});
 
-function Editor({ onGraphButtonClick }) {
-    const editorViewRef = useRef(null);
+            // Check if the editor is empty
+            if (editor.getModel().getLineCount() === 1 && firstLine === '') {
+                // If the editor is empty, format the pasted content
+                try {
+                    const parsedJson = JSON.parse(editor.getValue());
+                    const formattedJson = JSON.stringify(parsedJson, null, 2);
+                    editor.setValue(formattedJson);
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        });
+    };
+
+    const handleEditorDidChange = () => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+
+        const newTimeoutId = setTimeout(() => {
+            try {
+                const parsedJson = JSON.parse(editorRef.current.getValue());
+                const formattedJson = JSON.stringify(parsedJson, null, 2);
+                if (editorRef.current.getValue() !== formattedJson)
+                editorRef.current.setValue(formattedJson);
+            } catch (error) {
+            }
+        }, 5000);
+
+        // Save the new timeout ID
+        setTimeoutId(newTimeoutId);
+    }
+
+    const handleGraphButtonClick = () => {
+        const jsonData = editorRef.current.getValue();
+        onGraphButtonClick(jsonData);
+    };
 
     useEffect(() => {
-        const state = EditorState.create({
-            doc: '',
-            extensions: [
-                dracula,
-                lineNumbers(),
-                EditorView.lineWrapping,
-                javascript(),
-                formatJsonField,
-                EditorView.updateListener.of((update) => {
-                    if (update.docChanged) {
-                        let doc = update.view.state.doc.toString();
-                        try {
-                            let parsedJson = JSON.parse(doc);
-                            let formattedJson = JSON.stringify(parsedJson, null, 2);
-                            if (doc !== formattedJson) {
-                                let tr = update.view.state.update({
-                                    changes: {from: 0, to: doc.length, insert: formattedJson},
-                                    effects: formatJsonEffect.of(formattedJson)
-                                });
-                                update.view.dispatch(tr);
-                            }
-                        } catch (error) {
-                            // If parsing fails, leave the data as is
-                        }
-                    }
-                })
-            ]
-        });
-
-        if (!editorViewRef.current) {
-            editorViewRef.current = new EditorView({
-                parent: document.querySelector('#editor'),
-                state
-            });
-        }
-
-        document.getElementById('graph-button').addEventListener('click', function () {
-            const jsonData = editorViewRef.current.state.doc.toString();
-            onGraphButtonClick(jsonData);
-        });
+        document.getElementById('graph-button').addEventListener('click', handleGraphButtonClick);
     }, [onGraphButtonClick]);
 
     return (
-        <div id="editor"></div>
+        <div>
+            <Editor
+                height="95vh"
+                defaultLanguage="json"
+                defaultValue=""
+                theme="vs-dark"
+                onMount={handleEditorDidMount}
+                options={{
+                    formatOnType: true,
+                    formatOnPaste: true,
+                    minimap: { enabled: true },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    lineNumbers: 'on',
+                    tabSize: 2
+                }}
+            />
+        </div>
     );
 }
 
-export default Editor;
+export default CodeEditor;
