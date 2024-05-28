@@ -1,10 +1,12 @@
+// eslint-disable-next-line no-unused-vars
 import React, {useEffect, useRef, useCallback} from 'react';
+import PropTypes from "prop-types";
 import Editor from "@monaco-editor/react";
 
 function CodeEditor({onGraphButtonClick}) {
     const editorRef = useRef(null);
 
-    const handleEditorDidMount = (editor, monaco) => {
+    const handleEditorDidMount = (editor) => {
         editorRef.current = editor;
 
         editor.onDidPaste(() => {
@@ -57,5 +59,9 @@ function CodeEditor({onGraphButtonClick}) {
         </div>
     );
 }
+
+CodeEditor.propTypes = {
+    onGraphButtonClick: PropTypes.func.isRequired
+};
 
 export default CodeEditor;

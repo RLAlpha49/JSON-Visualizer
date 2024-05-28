@@ -1,4 +1,6 @@
+// eslint-disable-next-line no-unused-vars
 import React from 'react';
+import PropTypes from "prop-types";
 
 function GraphButton({onClick}) {
     return (
@@ -7,5 +9,9 @@ function GraphButton({onClick}) {
         </button>
     );
 }
+
+GraphButton.propTypes = {
+    onClick: PropTypes.func.isRequired
+};
 
 export default GraphButton;

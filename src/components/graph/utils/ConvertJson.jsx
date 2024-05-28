@@ -45,7 +45,6 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
             let node;
             if (Array.isArray(json[key])) {
                 node = {id: id++, data: `${key} (${json[key].length})`, parentId: parent.id, type: 'property-array'};
-                // eslint-disable-next-line no-loop-func
                 json[key].forEach((item, index) => {
                     id = processItem(item, index, node, nodes, edges, id, ConvertJsonToGraph);
                 });
