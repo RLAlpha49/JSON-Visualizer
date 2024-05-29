@@ -1,9 +1,10 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useContext} from 'react';
 import GraphButton from './buttons/GraphButton';
 import DarkModeButton from './buttons/DarkModeButton';
 import Editor from './Editor';
 import {ConvertJsonToGraph} from './utils/ConvertJson';
 import {GraphCanvas} from "./GraphCanvas";
+import {DarkModeContext} from "../context/DarkModeContext";
 
 function Graph() {
     const jsonInputRef = useRef(null);
@@ -12,6 +13,8 @@ function Graph() {
     const [graph, setGraph] = useState(null);
 
     const [jsonData, setJsonData] = useState("");
+
+    const { darkMode } = useContext(DarkModeContext);
 
     const handleGraphButtonClick = () => {
         if (jsonData.trim() !== "") { // Check if jsonData is not an empty string
@@ -33,14 +36,6 @@ function Graph() {
                 console.log(error);
             }
         }
-    };
-
-    const handleDarkModeButtonClick = () => {
-        document.body.classList.toggle('dark-mode');
-        const svgElements = document.querySelectorAll('svg');
-        svgElements.forEach(svg => {
-            svg.classList.toggle('dark-mode');
-        });
     };
 
     // Create a ref for the div
@@ -90,11 +85,11 @@ function Graph() {
     }, [divRef]);
 
     return (
-        <div id="graph">
-            <div id="json-input" ref={jsonInputRef}>
+        <div id="graph" className={darkMode ? 'dark-mode' : 'light-mode'}>
+            <div id="json-input" ref={jsonInputRef} className={darkMode ? 'dark-mode' : 'light-mode'}>
                 <div id="buttons">
                     <GraphButton onClick={handleGraphButtonClick}/>
-                    <DarkModeButton onClick={handleDarkModeButtonClick}/>
+                    <DarkModeButton/>
                 </div>
                 <Editor onGraphButtonClick={setJsonData}/>
             </div>

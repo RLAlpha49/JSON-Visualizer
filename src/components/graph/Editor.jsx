@@ -1,10 +1,12 @@
 // eslint-disable-next-line no-unused-vars
-import React, {useEffect, useRef, useCallback} from 'react';
+import React, {useEffect, useRef, useCallback, useContext} from 'react';
 import PropTypes from "prop-types";
 import Editor from "@monaco-editor/react";
+import {DarkModeContext} from "../context/DarkModeContext";
 
 function CodeEditor({onGraphButtonClick}) {
     const editorRef = useRef(null);
+    const {darkMode} = useContext(DarkModeContext);
 
     const handleEditorDidMount = (editor) => {
         editorRef.current = editor;
@@ -44,7 +46,7 @@ function CodeEditor({onGraphButtonClick}) {
                 height="95vh"
                 defaultLanguage="json"
                 defaultValue=""
-                theme="vs-dark"
+                theme={darkMode ? 'vs-dark' : 'vs-light'}
                 onMount={handleEditorDidMount}
                 options={{
                     formatOnType: true,

@@ -25,7 +25,32 @@ body {
 }
 
 #buttons {
-    height: 5%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 10px;
+}
+
+#buttons button {
+    background-color: #4CAF50;
+    border: 2px solid transparent;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    transition-duration: 0.4s;
+    border-radius: 12px;
+}
+
+#buttons button:hover {
+    background-color: white;
+    color: black;
+    border: 2px solid #4CAF50;
 }
 
 #editor {
@@ -36,7 +61,7 @@ body {
 
 #resizer {
     z-index: 1000;
-    width: 0.5%;
+    width: 1%;
     background: #aaa;
     cursor: ew-resize;
 }
@@ -49,11 +74,21 @@ body {
     width: 69.5%;
     height: 100%;
     overflow: hidden;
+    background-size: 30px 30px;
+    background-image:
+            linear-gradient(to right, #444444 1px, transparent 1px),
+            linear-gradient(to bottom, #444444 1px, transparent 1px);
+    background-attachment: fixed;
 }
 
 .dark-mode {
     background-color: #1e1e1e;
     color: #fff;
+}
+
+.light-mode {
+    background-color: #fff;
+    color: #000;
 }
 
 .cm-editor {
