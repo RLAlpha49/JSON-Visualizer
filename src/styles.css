@@ -75,9 +75,8 @@ body {
     height: 100%;
     overflow: hidden;
     background-size: 30px 30px;
-    background-image:
-            linear-gradient(to right, #444444 1px, transparent 1px),
-            linear-gradient(to bottom, #444444 1px, transparent 1px);
+    background-image: linear-gradient(to right, #444444 1px, transparent 1px),
+    linear-gradient(to bottom, #444444 1px, transparent 1px);
     background-attachment: fixed;
 }
 

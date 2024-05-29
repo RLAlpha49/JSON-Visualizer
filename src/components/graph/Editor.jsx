@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import React, {useEffect, useRef, useCallback, useContext} from 'react';
+import React, {useCallback, useContext, useEffect, useRef} from 'react';
 import PropTypes from "prop-types";
 import Editor from "@monaco-editor/react";
 import {DarkModeContext} from "../context/DarkModeContext";

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState, useContext} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import GraphButton from './buttons/GraphButton';
 import DarkModeButton from './buttons/DarkModeButton';
 import Editor from './Editor';
@@ -9,12 +9,13 @@ import {DarkModeContext} from "../context/DarkModeContext";
 function Graph() {
     const jsonInputRef = useRef(null);
     const svgContainerRef = useRef(null);
+    const graphCanvasRef = useRef(null);
 
-    const [graph, setGraph] = useState(null);
+    const [graphData, setGraphData] = useState({nodes: [], edges: []});
 
     const [jsonData, setJsonData] = useState("");
 
-    const { darkMode } = useContext(DarkModeContext);
+    const {darkMode} = useContext(DarkModeContext);
 
     const handleGraphButtonClick = () => {
         if (jsonData.trim() !== "") { // Check if jsonData is not an empty string
@@ -28,15 +29,18 @@ function Graph() {
                 console.log('Edges:', edges);
 
                 // Create the graph
-                const newGraph = GraphCanvas(nodes, edges);
-
-                // Update the graph state variable
-                setGraph(newGraph);
+                setGraphData({nodes, edges});
             } catch (error) {
                 console.log(error);
             }
         }
     };
+
+    const handleZoomToFit = () => {
+        if (graphCanvasRef.current) {
+            graphCanvasRef.current.zoomToFit();
+        }
+    }
 
     // Create a ref for the div
     const divRef = React.createRef();
@@ -84,21 +88,28 @@ function Graph() {
         });
     }, [divRef]);
 
+
     return (
         <div id="graph" className={darkMode ? 'dark-mode' : 'light-mode'}>
             <div id="json-input" ref={jsonInputRef} className={darkMode ? 'dark-mode' : 'light-mode'}>
                 <div id="buttons">
                     <GraphButton onClick={handleGraphButtonClick}/>
+                    {/*<button onClick={handleZoomToFit}>Zoom to Fit</button>*/}
                     <DarkModeButton/>
                 </div>
                 <Editor onGraphButtonClick={setJsonData}/>
             </div>
             <div id="resizer"></div>
             <div id="svg-container" ref={svgContainerRef}>
-                {graph}
+                <div id="svg" ref={divRef}>
+                    {graphData.nodes.length > 0 && graphData.edges.length > 0 && (
+                        <GraphCanvas ref={graphCanvasRef} nodes={graphData.nodes} edges={graphData.edges}/>
+                    )}
+                </div>
             </div>
         </div>
     );
+
 }
 
 export default Graph;

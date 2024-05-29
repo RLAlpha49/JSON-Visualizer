@@ -1,11 +1,67 @@
 // eslint-disable-next-line no-unused-vars
-import React from 'react';
+import React, {forwardRef, useEffect, useImperativeHandle, useRef} from 'react';
 import {Canvas, Edge, Node} from 'reaflow';
 import {Space} from "react-zoomable-ui";
 import {calculateNodeSize} from './utils/CalculateNodeSize';
 import {getColorBasedOnNodeType, getColorBasedOnType} from './utils/TextColor';
+import PropTypes from "prop-types";
 
-export function GraphCanvas(nodes, links) {
+export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
+    const canvasRef = useRef();
+
+    useImperativeHandle(ref, () => ({
+        zoomToFit: () => canvasRef.current.zoomToFit()
+    }));
+
+    useEffect(() => {
+        const setDimensions = () => {
+            const gElement = document.querySelector('#ref-2 g');
+            const ref2Element = document.getElementById('ref-2');
+            const containerElement = document.querySelector('._container_32rpv_1')
+
+            if (gElement && ref2Element) {
+                const bbox = gElement.getBBox();
+
+                ref2Element.style.width = `${(bbox.width * (1 + 4.1264671 / 100) * (100.0029 / 100)) + 14}px`;
+                ref2Element.style.height = `${parseFloat(bbox.height) + 50}px`;
+
+                containerElement.style.width = `${(bbox.width * (1 + 4.1264671 / 100) * (100.0029 / 100)) + 14}px`;
+                containerElement.style.height = `${parseFloat(bbox.height) + 50}px`;
+            }
+        };
+
+        // Function to start observer
+        const startObserver = () => {
+            const targetNode = document.getElementById('ref-2');
+            if (targetNode) {
+                observer.observe(targetNode, {childList: true, subtree: true});
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            setDimensions();
+            startObserver();
+        }, 2000);
+
+        let dimensionsTimeoutId;
+
+        const observer = new MutationObserver((mutationsList) => {
+            for (let mutation of mutationsList) {
+                if (mutation.type === 'childList' || mutation.type === 'subtree') {
+                    clearTimeout(dimensionsTimeoutId);
+
+                    dimensionsTimeoutId = setTimeout(setDimensions, 2000);
+                }
+            }
+        });
+
+        return () => {
+            clearTimeout(timeoutId);
+            clearTimeout(dimensionsTimeoutId);
+            observer.disconnect();
+        };
+    }, [nodes, edges]);
+
     const handleNodeClick = (event) => {
         console.log('Node Click:', event.id);
     };
@@ -13,6 +69,7 @@ export function GraphCanvas(nodes, links) {
     return (
         <Space>
             <Canvas
+                ref={canvasRef}
                 className="graph-canvas"
                 nodes={nodes.map(node => {
                     const {height, width} = calculateNodeSize(node);
@@ -24,10 +81,10 @@ export function GraphCanvas(nodes, links) {
                         width: width
                     };
                 })}
-                edges={links.map(link => ({
-                    id: `edge-${link.from}-${link.to}`,
-                    from: link.from,
-                    to: link.to,
+                edges={edges.map(edge => ({
+                    id: `edge-${edge.from}-${edge.to}`,
+                    from: edge.from,
+                    to: edge.to,
                 }))}
                 node={<Node
                     onClick={handleNodeClick}
@@ -98,6 +155,13 @@ export function GraphCanvas(nodes, links) {
             />
         </Space>
     );
-}
+});
+
+GraphCanvas.displayName = 'GraphCanvas';
+
+GraphCanvas.propTypes = {
+  nodes: PropTypes.array.isRequired,
+  edges: PropTypes.array.isRequired,
+};
 
 export default GraphCanvas;
