@@ -15,6 +15,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-modal": "^3.16.1",
     "react-router-dom": "^6.23.1",
     "react-zoomable-ui": "^0.11.0",
     "reaflow": "^5.2.12",

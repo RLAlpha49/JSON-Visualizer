@@ -36,12 +36,6 @@ function Graph() {
         }
     };
 
-    const handleZoomToFit = () => {
-        if (graphCanvasRef.current) {
-            graphCanvasRef.current.zoomToFit();
-        }
-    }
-
     // Create a ref for the div
     const divRef = React.createRef();
 

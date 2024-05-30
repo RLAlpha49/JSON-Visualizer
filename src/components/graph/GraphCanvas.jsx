@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-unused-vars
-import React, {forwardRef, useEffect, useImperativeHandle, useRef} from 'react';
+import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {Canvas, Edge, Node} from 'reaflow';
 import {Space} from "react-zoomable-ui";
 import {calculateNodeSize} from './utils/CalculateNodeSize';
 import {getColorBasedOnNodeType, getColorBasedOnType} from './utils/TextColor';
+import NodeDetails from "./NodeDetails";
 import PropTypes from "prop-types";
 
 export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
@@ -62,8 +63,14 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
         };
     }, [nodes, edges]);
 
-    const handleNodeClick = (event) => {
-        console.log('Node Click:', event.id);
+    const [selectedNode, setSelectedNode] = useState(null);
+    const [selectedNodePath, setSelectedNodePath] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedNode(null);
+        setSelectedNodePath(null);
     };
 
     return (
@@ -76,6 +83,7 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                     return {
                         id: node.id,
                         data: node.data,
+                        path: node.path,
                         type: node.type,
                         height: height,
                         width: width
@@ -87,9 +95,13 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                     to: edge.to,
                 }))}
                 node={<Node
-                    onClick={handleNodeClick}
                     animated={false}
                     label={null}
+                    onClick={(event, node) => {
+                        setSelectedNode(node.data);
+                        setSelectedNodePath(node.path);
+                        setIsModalOpen(true);
+                    }}
                 >
                     {event => {
                         return (
@@ -98,7 +110,6 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                                 <div style={{
                                     padding: 10,
                                     textAlign: 'center',
-                                    pointerEvents: 'none'
                                 }}>
                                     {typeof event.node.data === 'string' ?
                                         <span style={{
@@ -109,10 +120,9 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                                             overflow: "hidden",
                                             textOverflow: "ellipsis",
                                             whiteSpace: "nowrap",
-                                            pointerEvents: 'none'
                                         }}>{event.node.data}</span> :
                                         event.node.data ? Object.entries(event.node.data).map(([key, value], index) => (
-                                            <div key={index} style={{pointerEvents: 'none', textAlign: 'left'}}>
+                                            <div key={index} style={{textAlign: 'left'}}>
                                                 <span style={{
                                                     color: '#51b6ff',
                                                     fontFamily: "monospace",
@@ -121,7 +131,6 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                                                     overflow: "hidden",
                                                     textOverflow: "ellipsis",
                                                     whiteSpace: "nowrap",
-                                                    pointerEvents: 'none'
                                                 }}>{key}: </span>
                                                 <span style={{
                                                     color: getColorBasedOnType(value),
@@ -131,10 +140,9 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                                                     overflow: "hidden",
                                                     textOverflow: "ellipsis",
                                                     whiteSpace: "nowrap",
-                                                    pointerEvents: 'none'
                                                 }}>{JSON.stringify(value, null, 2)}</span>
                                             </div>
-                                        )) : <h3 style={{color: 'white', pointerEvents: 'none'}}>{event.node.text}</h3>}
+                                        )) : <h3 style={{color: 'white'}}>{event.node.text}</h3>}
                                 </div>
                             </foreignObject>
                         );
@@ -153,6 +161,7 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                 dragNode={null}
                 fit={true}
             />
+            {selectedNode && <NodeDetails nodeData={selectedNode} nodePath={selectedNodePath} isOpen={isModalOpen} onRequestClose={closeModal}/>}
         </Space>
     );
 });
