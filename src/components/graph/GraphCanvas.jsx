@@ -161,7 +161,8 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                 dragNode={null}
                 fit={true}
             />
-            {selectedNode && <NodeDetails nodeData={selectedNode} nodePath={selectedNodePath} isOpen={isModalOpen} onRequestClose={closeModal}/>}
+            {selectedNode && <NodeDetails nodeData={selectedNode} nodePath={selectedNodePath} isOpen={isModalOpen}
+                                          onRequestClose={closeModal}/>}
         </Space>
     );
 });
@@ -169,8 +170,8 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
 GraphCanvas.displayName = 'GraphCanvas';
 
 GraphCanvas.propTypes = {
-  nodes: PropTypes.array.isRequired,
-  edges: PropTypes.array.isRequired,
+    nodes: PropTypes.array.isRequired,
+    edges: PropTypes.array.isRequired,
 };
 
 export default GraphCanvas;

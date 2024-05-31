@@ -46,7 +46,13 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
         if (Array.isArray(json[key]) || (typeof json[key] === 'object' && json[key] !== null)) {
             let node;
             if (Array.isArray(json[key])) {
-                node = {id: id++, data: `${key} (${json[key].length})`, parentId: parent.id, type: 'property-array', path: newPath};
+                node = {
+                    id: id++,
+                    data: `${key} (${json[key].length})`,
+                    parentId: parent.id,
+                    type: 'property-array',
+                    path: newPath
+                };
                 json[key].forEach((item, index) => {
                     id = processItem(item, index, node, nodes, edges, id, newPath);
                 });

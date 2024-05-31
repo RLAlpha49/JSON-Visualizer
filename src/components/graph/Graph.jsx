@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import GraphButton from './buttons/GraphButton';
-import DarkModeButton from './buttons/DarkModeButton';
+import GraphButton from './extras/GraphButton';
+import DarkModeButton from './extras/DarkModeButton';
 import Editor from './Editor';
 import {ConvertJsonToGraph} from './utils/ConvertJson';
 import {GraphCanvas} from "./GraphCanvas";
