@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import React from 'react';
+import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -32,7 +32,7 @@ const TooltipText = styled.span`
     }
 `;
 
-const Tooltip = ({handleCopy, ref, tooltipText}) => (
+const Tooltip = forwardRef(({handleCopy, tooltipText}, ref) => (
     <TooltipContainer>
         <button onClick={() => handleCopy(ref)} style={{
             position: 'absolute',
@@ -49,11 +49,12 @@ const Tooltip = ({handleCopy, ref, tooltipText}) => (
         </button>
         <TooltipText>{tooltipText}</TooltipText>
     </TooltipContainer>
-);
+));
+
+Tooltip.displayName = 'Tooltip';
 
 Tooltip.propTypes = {
     handleCopy: PropTypes.func.isRequired,
-    ref: PropTypes.object.isRequired,
     tooltipText: PropTypes.string.isRequired,
 };
 

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import Tooltip from "./extras/Tooltip";
 import styled from 'styled-components';
+import {getColorBasedOnType} from './utils/TextColor';
 
 Modal.setAppElement('#root');
 
@@ -43,7 +44,7 @@ const Pre = styled.pre`
     font-size: 14px;
     background-color: #111;
     border: 1px solid #4CAF50;
-    padding: 20px;
+    padding: 15px 25px 15px 15px;
     border-radius: 5px;
     margin-bottom: 10px;
     min-width: 350px;
@@ -57,10 +58,36 @@ const P = styled.p`
     font-size: 14px;
     background-color: #111;
     border: 1px solid #4CAF50;
-    padding: 15px 20px;
+    padding: 15px 25px 15px 15px;
     border-radius: 5px;
     margin-bottom: 10px;
 `;
+
+const TooltipDiv = styled.div`
+    position: relative;
+`;
+
+const H4 = styled.h4`
+    color: #4CAF50;
+    font-size: 16px;
+    font-family: monospace;
+    font-weight: 500;
+`;
+
+const BasicSpan = styled.span`
+    font-family: monospace;
+    font-weight: 500;
+    font-size: 12px;
+`
+
+const KeyOrValue = styled.span`
+    font-family: monospace;
+    font-weight: 500;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+`
 
 const NodeDetails = ({nodeData, nodePath, isOpen, onRequestClose}) => {
     const preRef = useRef();
@@ -68,6 +95,28 @@ const NodeDetails = ({nodeData, nodePath, isOpen, onRequestClose}) => {
 
     const handleCopy = (ref) => {
         navigator.clipboard.writeText(ref.current.textContent);
+    };
+
+    const renderJsonContent = (data) => {
+        if (typeof data === 'object' && data !== null) {
+            return (
+                <>
+                    <BasicSpan style={{color: getColorBasedOnType('{')}}>{'{'}</BasicSpan>
+                    {Object.entries(data).map(([key, value], index) => (
+                        <div key={index} style={{textAlign: 'left', paddingLeft: '20px'}}>
+                            <KeyOrValue style={{color: '#51b6ff'}}>{key}: </KeyOrValue>
+                            <KeyOrValue
+                                style={{color: getColorBasedOnType(value)}}>{JSON.stringify(value, null, 2)}</KeyOrValue>
+                        </div>
+                    ))}
+                    <BasicSpan style={{color: getColorBasedOnType('}')}}>{'}'}</BasicSpan>
+                </>
+            );
+        } else {
+            return (
+                <BasicSpan style={{color: getColorBasedOnType(data)}}>{JSON.stringify(data, null, 2)}</BasicSpan>
+            );
+        }
     };
 
     return (
@@ -96,22 +145,20 @@ const NodeDetails = ({nodeData, nodePath, isOpen, onRequestClose}) => {
                     <CloseButton onClick={onRequestClose}>X</CloseButton>
                 </Header>
                 <Body>
-                    <h4 style={{color: '#4CAF50', fontSize: '16px', fontFamily: "monospace", fontWeight: '500'}}>JSON
-                        Content</h4>
-                    <div style={{position: 'relative'}}>
+                    <H4>JSON Content</H4>
+                    <TooltipDiv>
                         <Pre ref={preRef}>
-                            {JSON.stringify(nodeData, null, 2)}
+                            {renderJsonContent(nodeData)}
                         </Pre>
                         <Tooltip handleCopy={handleCopy} ref={pRef} tooltipText="Copy JSON"/>
-                    </div>
-                    <h4 style={{color: '#4CAF50', fontSize: '16px', fontFamily: "monospace", fontWeight: '500'}}>JSON
-                        Path</h4>
-                    <div style={{position: 'relative'}}>
-                        <P ref={pRef}>
+                    </TooltipDiv>
+                    <H4>JSON Path</H4>
+                    <TooltipDiv>
+                        <P ref={pRef} style={{color: '#bebbbb'}}>
                             {nodePath}
                         </P>
                         <Tooltip handleCopy={handleCopy} ref={pRef} tooltipText="Copy Path"/>
-                    </div>
+                    </TooltipDiv>
                 </Body>
             </ModalContent>
         </Modal>
