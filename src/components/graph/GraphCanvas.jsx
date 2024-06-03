@@ -73,6 +73,10 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
         setSelectedNodePath(null);
     };
 
+    const handleSelectNode = (node) => {
+        setSelectedNode(node);
+    }
+
     return (
         <Space>
             <Canvas
@@ -80,13 +84,17 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                 className="graph-canvas"
                 nodes={nodes.map(node => {
                     const {height, width} = calculateNodeSize(node);
+                    const connectedEdges = edges.filter(edge => edge.from === node.id || edge.to === node.id);
                     return {
                         id: node.id,
                         data: node.data,
                         path: node.path,
                         type: node.type,
                         height: height,
-                        width: width
+                        width: width,
+                        parentId: node.parentId,
+                        connectedNodeIds: node.connectedNodeIds,
+                        connectedEdges: connectedEdges
                     };
                 })}
                 edges={edges.map(edge => ({
@@ -98,7 +106,7 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                     animated={false}
                     label={null}
                     onClick={(event, node) => {
-                        setSelectedNode(node.data);
+                        setSelectedNode(node);
                         setSelectedNodePath(node.path);
                         setIsModalOpen(true);
                     }}
@@ -161,8 +169,8 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                 dragNode={null}
                 fit={true}
             />
-            {selectedNode && <NodeDetails nodeData={selectedNode} nodePath={selectedNodePath} isOpen={isModalOpen}
-                                          onRequestClose={closeModal}/>}
+            {selectedNode && <NodeDetails nodeData={selectedNode} nodePath={selectedNodePath} nodes={nodes} edges={edges} isOpen={isModalOpen}
+                                          onRequestClose={closeModal} onSelectNode={handleSelectNode}/>}
         </Space>
     );
 });

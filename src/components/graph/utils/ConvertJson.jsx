@@ -9,23 +9,34 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
                 }
             }
 
-            const indexNode = {id: id++, data: nodeData, parentId: node.id, type: 'data', path: newPath};
+            const indexNode = {
+                id: id++,
+                data: nodeData,
+                parentId: node.id,
+                type: 'data',
+                path: newPath,
+                connectedNodeIds: []
+            };
             nodes.push(indexNode);
             edges.push({from: node.id, to: indexNode.id});
+            node.connectedNodeIds.push(indexNode.id);
 
             if (typeof item === 'object') {
-                id = ConvertJsonToGraph(item, indexNode, nodes, edges, id, newPath).id;
+                const result = ConvertJsonToGraph(item, indexNode, nodes, edges, id, newPath);
+                id = result.id;
             } else {
                 const valueNode = {id: id++, data: item, parentId: indexNode.id, type: 'data', path: newPath};
                 nodes.push(valueNode);
                 edges.push({from: indexNode.id, to: valueNode.id});
+                indexNode.connectedNodeIds.push(valueNode.id);
             }
         } else {
             const valueNode = {id: id++, data: item, parentId: node.id, type: 'data', path: newPath};
             nodes.push(valueNode);
             edges.push({from: node.id, to: valueNode.id});
+            node.connectedNodeIds.push(valueNode.id);
         }
-        return id;
+        return {id};
     };
 
     if (parent === null) {
@@ -36,7 +47,14 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
             }
         }
 
-        const node = {id: id++, data: rootData, parentId: null, type: 'root', path};
+        const node = {
+            id: id++,
+            data: rootData,
+            parentId: null,
+            type: 'root',
+            path,
+            connectedNodeIds: [],
+        };
         nodes.push(node);
         parent = node;
     }
@@ -51,18 +69,29 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
                     data: `${key} (${json[key].length})`,
                     parentId: parent.id,
                     type: 'property-array',
-                    path: newPath
+                    path: newPath,
+                    connectedNodeIds: [],
                 };
                 json[key].forEach((item, index) => {
-                    id = processItem(item, index, node, nodes, edges, id, newPath);
+                    const result = processItem(item, index, node, nodes, edges, id, newPath);
+                    id = result.id;
                 });
             } else {
-                node = {id: id++, data: key, parentId: parent.id, type: 'property-object', path: newPath};
-                id = ConvertJsonToGraph(json[key], node, nodes, edges, id, newPath).id;
+                node = {
+                    id: id++,
+                    data: key,
+                    parentId: parent.id,
+                    type: 'property-object',
+                    path: newPath,
+                    connectedNodeIds: [],
+                };
+                const result = ConvertJsonToGraph(json[key], node, nodes, edges, id, newPath);
+                id = result.id;
             }
 
             nodes.push(node);
             edges.push({from: parent.id, to: node.id});
+            parent.connectedNodeIds.push(node.id);
 
             if (typeof json[key] === 'object' && !Array.isArray(json[key]) && json[key] !== null) {
                 for (const subKey in json[key]) {
@@ -72,10 +101,12 @@ export function ConvertJsonToGraph(json, parent = null, nodes = [], edges = [], 
                             data: {[subKey]: json[key][subKey]},
                             parentId: node.id,
                             type: 'data',
-                            path: `${newPath}.${subKey}`
+                            path: `${newPath}.${subKey}`,
+                            connectedNodeIds: [],
                         };
                         nodes.push(subNode);
                         edges.push({from: node.id, to: subNode.id});
+                        node.connectedNodeIds.push(subNode.id);
                     }
                 }
             }
