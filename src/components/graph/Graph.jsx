@@ -5,6 +5,47 @@ import Editor from './Editor';
 import {ConvertJsonToGraph} from './utils/ConvertJson';
 import {GraphCanvas} from "./GraphCanvas";
 import {DarkModeContext} from "../context/DarkModeContext";
+import styled from "styled-components";
+
+const GraphDiv = styled.div`
+    display: flex;
+    height: 100vh;
+    width: 100%;
+`;
+
+const JsonInput = styled.div`
+    z-index: 1000;
+    width: 30%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+`;
+
+const SvgContainer = styled.div`
+    width: 69.5%;
+    height: 100%;
+    overflow: hidden;
+    background-size: 30px 30px;
+    background-image: linear-gradient(to right, #444444 1px, transparent 1px),
+    linear-gradient(to bottom, #444444 1px, transparent 1px);
+    background-attachment: fixed;
+`;
+
+const Resizer = styled.div`
+    z-index: 1000;
+    width: 1%;
+    background: #aaa;
+    cursor: ew-resize;
+`;
+
+const Buttons = styled.div`
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 100%;
+    padding: 10px;
+`;
 
 function Graph() {
     const jsonInputRef = useRef(null);
@@ -84,24 +125,23 @@ function Graph() {
 
 
     return (
-        <div id="graph" className={darkMode ? 'dark-mode' : 'light-mode'}>
-            <div id="json-input" ref={jsonInputRef} className={darkMode ? 'dark-mode' : 'light-mode'}>
-                <div id="buttons">
+        <GraphDiv id="graph" className={darkMode ? 'dark-mode' : 'light-mode'}>
+            <JsonInput ref={jsonInputRef} className={darkMode ? 'dark-mode' : 'light-mode'}>
+                <Buttons id="buttons">
                     <GraphButton onClick={handleGraphButtonClick}/>
-                    {/*<button onClick={handleZoomToFit}>Zoom to Fit</button>*/}
                     <DarkModeButton/>
-                </div>
+                </Buttons>
                 <Editor onGraphButtonClick={setJsonData}/>
-            </div>
-            <div id="resizer"></div>
-            <div id="svg-container" ref={svgContainerRef}>
+            </JsonInput>
+            <Resizer id="resizer"></Resizer>
+            <SvgContainer id="svg-container" ref={svgContainerRef}>
                 <div id="svg" ref={divRef}>
                     {graphData.nodes.length > 0 && graphData.edges.length > 0 && (
                         <GraphCanvas ref={graphCanvasRef} nodes={graphData.nodes} edges={graphData.edges}/>
                     )}
                 </div>
-            </div>
-        </div>
+            </SvgContainer>
+        </GraphDiv>
     );
 
 }

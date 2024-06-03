@@ -63,23 +63,23 @@ const P = styled.p`
     margin-bottom: 10px;
     max-height: 150px;
     overflow-y: auto;
-    
+
     &::-webkit-scrollbar {
         width: 10px;
         display: inherit !important;
     }
 
     &::-webkit-scrollbar-track {
-        background: #111; 
+        background: #111;
     }
 
     &::-webkit-scrollbar-thumb {
-        background: #4CAF50; 
+        background: #4CAF50;
         border-radius: 5px;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        background: #45a049; 
+        background: #45a049;
     }
 `;
 
@@ -170,7 +170,9 @@ const NodeDetails = ({nodeData, nodePath, nodes, edges, isOpen, onRequestClose, 
             const parentEdge = edges.find(edge => edge.to === nodeData.id && edge.from === nodeData.parentId);
             pathElements.push(
                 <div key={parentEdge.from}>
-                    <PathButton onClick={() => handleNodeClick(parentEdge.from)}>{parentEdge.from}</PathButton> → <PathButton onClick={() => handleNodeClick(parentEdge.to)}>{parentEdge.to}</PathButton>
+                    <PathButton
+                        onClick={() => handleNodeClick(parentEdge.from)}>{parentEdge.from}</PathButton> → <PathButton
+                    onClick={() => handleNodeClick(parentEdge.to)}>{parentEdge.to}</PathButton>
                 </div>
             );
         }
@@ -180,7 +182,8 @@ const NodeDetails = ({nodeData, nodePath, nodes, edges, isOpen, onRequestClose, 
                 const edge = edges.find(edge => edge.from === nodeData.id && edge.to === nodeId);
                 pathElements.push(
                     <div key={index}>
-                        <PathButton onClick={() => handleNodeClick(edge.from)}>{edge.from}</PathButton> → <PathButton onClick={() => handleNodeClick(edge.to)}>{edge.to}</PathButton>
+                        <PathButton onClick={() => handleNodeClick(edge.from)}>{edge.from}</PathButton> → <PathButton
+                        onClick={() => handleNodeClick(edge.to)}>{edge.to}</PathButton>
                     </div>
                 );
             });

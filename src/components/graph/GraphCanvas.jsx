@@ -169,8 +169,10 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                 dragNode={null}
                 fit={true}
             />
-            {selectedNode && <NodeDetails nodeData={selectedNode} nodePath={selectedNodePath} nodes={nodes} edges={edges} isOpen={isModalOpen}
-                                          onRequestClose={closeModal} onSelectNode={handleSelectNode}/>}
+            {selectedNode &&
+                <NodeDetails nodeData={selectedNode} nodePath={selectedNodePath} nodes={nodes} edges={edges}
+                             isOpen={isModalOpen}
+                             onRequestClose={closeModal} onSelectNode={handleSelectNode}/>}
         </Space>
     );
 });
