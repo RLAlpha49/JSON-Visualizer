@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import React, {forwardRef, useEffect, useRef, useState} from 'react';
 import {Canvas, Edge, Node} from 'reaflow';
 import {Space} from "react-zoomable-ui";
 import {calculateNodeSize} from './utils/CalculateNodeSize';
@@ -9,10 +9,7 @@ import PropTypes from "prop-types";
 
 export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
     const canvasRef = useRef();
-
-    useImperativeHandle(ref, () => ({
-        zoomToFit: () => canvasRef.current.zoomToFit()
-    }));
+    const [viewport, setViewport] = useState(null)
 
     useEffect(() => {
         const setDimensions = () => {
@@ -23,11 +20,17 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
             if (gElement && ref2Element) {
                 const bbox = gElement.getBBox();
 
-                ref2Element.style.width = `${(bbox.width * (1 + 4.1264671 / 100) * (100.0029 / 100)) + 14}px`;
-                ref2Element.style.height = `${parseFloat(bbox.height) + 50}px`;
+                const width = (bbox.width * (1 + 4.1264671 / 100) * (100.0029 / 100)) + 14;
+                const height = parseFloat(bbox.height) + 50;
 
-                containerElement.style.width = `${(bbox.width * (1 + 4.1264671 / 100) * (100.0029 / 100)) + 14}px`;
-                containerElement.style.height = `${parseFloat(bbox.height) + 50}px`;
+                ref2Element.style.width = `${width}px`;
+                ref2Element.style.height = `${height}px`;
+
+                containerElement.style.width = `${width}px`;
+                containerElement.style.height = `${height}px`;
+
+                const position = { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+                viewport.camera.recenter((position.x / 2), (position.y / 2), 1);
             }
         };
 
@@ -42,7 +45,7 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
         const timeoutId = setTimeout(() => {
             setDimensions();
             startObserver();
-        }, 2000);
+        }, 250);
 
         let dimensionsTimeoutId;
 
@@ -61,7 +64,7 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
             clearTimeout(dimensionsTimeoutId);
             observer.disconnect();
         };
-    }, [nodes, edges]);
+    }, [nodes, edges, viewport]);
 
     const [selectedNode, setSelectedNode] = useState(null);
     const [selectedNodePath, setSelectedNodePath] = useState(null);
@@ -78,7 +81,11 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
     }
 
     return (
-        <Space>
+        <Space
+            onCreate={vp => {
+                setViewport(vp);
+            }}
+        >
             <Canvas
                 ref={canvasRef}
                 className="graph-canvas"
@@ -109,6 +116,7 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                         setSelectedNode(node);
                         setSelectedNodePath(node.path);
                         setIsModalOpen(true);
+                        console.log(node)
                     }}
                 >
                     {event => {
