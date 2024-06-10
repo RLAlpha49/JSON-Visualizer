@@ -43,7 +43,7 @@ const Pre = styled.pre`
     font-weight: 500;
     font-size: 14px;
     background-color: #111;
-    border: 1px solid #4CAF50;
+    border: 2px solid #4CAF50;
     padding: 15px 25px 15px 15px;
     border-radius: 5px;
     margin-bottom: 10px;
@@ -57,7 +57,7 @@ const P = styled.p`
     font-weight: 500;
     font-size: 14px;
     background-color: #111;
-    border: 1px solid #4CAF50;
+    border: 2px solid #4CAF50;
     padding: 15px 25px 15px 15px;
     border-radius: 5px;
     margin-bottom: 10px;
