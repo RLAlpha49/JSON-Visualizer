@@ -3,7 +3,7 @@ import GraphButton from './extras/GraphButton';
 import DarkModeButton from './extras/DarkModeButton';
 import Editor from './Editor';
 import {ConvertJsonToGraph} from './utils/ConvertJson';
-import {GraphCanvas} from "./GraphCanvas";
+import GraphCanvas from "./GraphCanvas";
 import {DarkModeContext} from "../context/DarkModeContext";
 import styled from "styled-components";
 

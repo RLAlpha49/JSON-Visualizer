@@ -252,4 +252,4 @@ NodeDetails.propTypes = {
     onSelectNode: PropTypes.func.isRequired,
 };
 
-export default NodeDetails;
+export default React.memo(NodeDetails);

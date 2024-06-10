@@ -7,7 +7,7 @@ import {getColorBasedOnNodeType, getColorBasedOnType} from './utils/TextColor';
 import NodeDetails from "./NodeDetails";
 import PropTypes from "prop-types";
 
-export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
+const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
     const canvasRef = useRef();
     const [viewport, setViewport] = useState(null)
 
@@ -29,7 +29,7 @@ export const GraphCanvas = forwardRef(({nodes, edges}, ref) => {
                 containerElement.style.width = `${width}px`;
                 containerElement.style.height = `${height}px`;
 
-                const position = { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+                const position = {x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2};
                 viewport.camera.recenter((position.x / 2), (position.y / 2), 1);
             }
         };
@@ -192,4 +192,4 @@ GraphCanvas.propTypes = {
     edges: PropTypes.array.isRequired,
 };
 
-export default GraphCanvas;
+export default React.memo(GraphCanvas);
